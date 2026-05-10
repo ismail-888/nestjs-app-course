@@ -1,0 +1,29 @@
+### fina nesta5dem haydli l extension "rest client" badal l postman
+### Get all Products
+GET http://localhost:5000/api/products
+
+### Get Single Product
+GET http://localhost:5000/api/products/2
+
+### Create New Product
+POST http://localhost:5000/api/products
+Content-Type: application/json
+
+{
+    "title":"product five",
+    "price":22
+}
+
+### Update Product
+PUT http://localhost:5000/api/products/5
+Content-Type: application/json
+
+{
+    "title":"product one"
+}
+
+### Delete Product
+DELETE  http://localhost:5000/api/products/5
+
+# note: ne7na mn 7ot "###" 2able l request 8ern enu kerml l comment, iza ma 7etayna ma betbayen l "Send Request" fo2 l Request.
+# la2n bl .http file ma btesma7lna 8er nektob request we7de bas ma3 l "###" fina nzid
