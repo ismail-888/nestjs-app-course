@@ -73,7 +73,7 @@ export class ProductsController {
   // PUT: ~/api/products/:id
   @Put(':id')
   public updateProduct(
-    @Param('id', ParseIntPipe) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateProductDto,
   ) {
     return this.ProductsService.update(id, body);
@@ -81,7 +81,7 @@ export class ProductsController {
 
   // Delete: ~/api/products/:id
   @Delete(':id')
-  public deleteProducts(@Param('id', ParseIntPipe) id: string) {
+  public deleteProducts(@Param('id', ParseIntPipe) id: number) {
     return this.ProductsService.delete(id);
   }
 }
