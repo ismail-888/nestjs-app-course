@@ -17,6 +17,7 @@ import {
 // import type { Request, Response } from 'express';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { UpdateProductDto } from './dtos/update-product.dto';
+// import { ConfigService } from '@nestjs/config';
 
 // l controller bl nestjs bye3ml handle l requests and responses
 // DTO: Data Transfer Object
@@ -48,7 +49,10 @@ export class ProductsController {
 
   //Method 2 DI (Constructor Injection)
   // l NESTjs mn l DI container la7 ye5od Object mn l product service w ya3ti la haydi l property fi 2alb hayda l class.
-  constructor(private readonly ProductsService: ProductsService) {}
+  constructor(
+    private readonly ProductsService: ProductsService,
+    // private readonly config: ConfigService,
+  ) {}
 
   @Post()
   public createNewProduct(
@@ -61,6 +65,9 @@ export class ProductsController {
   // GET: ~/api/products
   @Get()
   public getAllProducts() {
+    // const sample = this.config.get<string>('SAMPLE');// bl controller wl service haydi l tari2a a7ssan
+    // const sample1 = process.env.SAMPLE;
+    // console.log({ sample, sample1 });
     return this.ProductsService.getAll();
   }
 

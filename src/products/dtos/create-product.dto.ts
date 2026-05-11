@@ -7,6 +7,7 @@ import {
   // MaxLength,
   Max,
   Length,
+  MinLength,
 } from 'class-validator';
 
 export class CreateProductDto {
@@ -19,6 +20,7 @@ export class CreateProductDto {
   title: string;
 
   @IsString()
+  @MinLength(5)
   description: string;
 
   @IsNumber()
