@@ -7,11 +7,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dtos/login.dto';
+import { JwtService } from '@nestjs/jwt';
+import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
   /**
@@ -20,7 +23,7 @@ export class UsersService {
    * @returns JWT (access token)
    */
 
-  public async register(registerDto: RegisterDto) {
+  public async register(registerDto: RegisterDto): Promise<AccessTokenType> {
     const { email, password, username } = registerDto;
 
     const userFromDb = await this.usersRepository.findOne({ where: { email } });
@@ -34,8 +37,13 @@ export class UsersService {
       password: hashedPassword,
     });
     newUser = await this.usersRepository.save(newUser);
-    // @TODO => generate JWT token
-    return newUser;
+
+    const accessToken = await this.generateJWTToken({
+      id: newUser.id,
+      userType: newUser.userType,
+    });
+
+    return { accessToken };
   }
 
   /**
@@ -44,7 +52,7 @@ export class UsersService {
    * @returns JWT (access token)
    */
 
-  public async login(loginDto: LoginDto) {
+  public async login(loginDto: LoginDto): Promise<AccessTokenType> {
     const { email, password } = loginDto;
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) throw new BadRequestException('invalid email or password');
@@ -52,6 +60,20 @@ export class UsersService {
     if (!isPasswordMatch)
       throw new BadRequestException('invalid email or password');
     // @TODO => generate JWT token
-    return user;
+    const accessToken = await this.generateJWTToken({
+      id: user.id,
+      userType: user.userType,
+    });
+    return { accessToken };
+  }
+
+  /**
+   * Generate Json web token
+   * @param payload JWT payload
+   * @returns token
+   */
+  private generateJWTToken(payload: JWTPayloadType): Promise<string> {
+    // haydi 3mlneha private method la2n ma7a nesta3mla ela bi 2alb hal file.
+    return this.jwtService.signAsync(payload);
   }
 }
