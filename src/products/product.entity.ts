@@ -1,12 +1,15 @@
+import { Review } from 'src/reviews/review.entity';
+import { User } from 'src/users/user.entity';
+import { CURRENT_TIMESTAMP } from 'src/utils/constants';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-const CURRENT_TIMESTAMP = 'CURRENT_TIMESTAMP(6)';
 
 @Entity({ name: 'products' })
 // essm l class lezm ykoun signle
@@ -32,4 +35,10 @@ export class Product {
     onUpdate: CURRENT_TIMESTAMP,
   })
   updatedAt: Date;
+
+  @OneToMany(() => Review, (review) => review.product)
+  reviews: Review[]; // fi relation 1 to many between product and review
+
+  @ManyToOne(() => User, (user) => user.products)
+  user: User;
 }
