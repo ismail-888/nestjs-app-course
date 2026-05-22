@@ -1,6 +1,10 @@
 // import { forwardRef, Inject, Injectable } from '@nestjs/common';
 // import { ReviewsService } from 'src/reviews/reviews.service';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { RegisterDto } from './dtos/register.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -59,12 +63,25 @@ export class UsersService {
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch)
       throw new BadRequestException('invalid email or password');
-    // @TODO => generate JWT token
+    // generate JWT token
     const accessToken = await this.generateJWTToken({
       id: user.id,
       userType: user.userType,
     });
     return { accessToken };
+  }
+
+  /**
+   * get current user (logged in user)
+   * @param id id of the logged in user
+   * @returns the user from the database
+   */
+  public async getCurrentUser(id: number) {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+    });
+    if (!user) throw new NotFoundException('user not found');
+    return user;
   }
 
   /**
