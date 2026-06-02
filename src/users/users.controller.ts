@@ -1,10 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseIntPipe,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -16,6 +20,7 @@ import type { JWTPayloadType } from 'src/utils/types';
 import { Roles } from './decorators/user-role.decorator';
 import { UserType } from 'src/utils/enums';
 import { AuthRolesGuard } from './guards/auth-roles.guard';
+import { UpdateUserDto } from './dtos/update-user.dto';
 // import { ReviewsService } from 'src/reviews/reviews.service';
 
 @Controller('api/users')
@@ -51,5 +56,27 @@ export class UsersController {
   @UseGuards(AuthRolesGuard) // lezm nesta3ml l "Roles" decorator kerml njib l user type iza ma 3mlna hek bya3ti error
   public getAllUsers() {
     return this.usersService.getAll();
+  }
+
+  // PUT: ~/api/users
+  @Put()
+  @Roles(UserType.ADMIN, UserType.NORMAL_USER)
+  @UseGuards(AuthRolesGuard)
+  public updateUser(
+    @CurrentUser() payload: JWTPayloadType,
+    @Body() body: UpdateUserDto,
+  ) {
+    return this.usersService.update(payload.id, body);
+  }
+
+  // DELETE: ~/api/users/:id
+  @Delete(':id')
+  @Roles(UserType.ADMIN, UserType.NORMAL_USER)
+  @UseGuards(AuthRolesGuard)
+  public deleteUser(
+    @Param('id', ParseIntPipe) id: number, //ParseIntPipe usage: URLs pass parameters as strings (e.g., "/api/users/12" delivers "12"). By using @Param('id', ParseIntPipe), NestJS automatically converts that string into a proper JavaScript number before passing it to your service.
+    @CurrentUser() payload: JWTPayloadType,
+  ) {
+    return this.usersService.delete(id, payload);
   }
 }

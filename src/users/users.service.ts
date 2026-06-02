@@ -2,6 +2,7 @@
 // import { ReviewsService } from 'src/reviews/reviews.service';
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,6 +14,8 @@ import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
+import { UpdateUserDto } from './dtos/update-user.dto';
+import { UserType } from 'src/utils/enums';
 
 @Injectable()
 export class UsersService {
@@ -32,8 +35,8 @@ export class UsersService {
 
     const userFromDb = await this.usersRepository.findOne({ where: { email } });
     if (userFromDb) throw new BadRequestException('user already exists');
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const hashedPassword = await this.hashPassword(password);
 
     let newUser = this.usersRepository.create({
       email,
@@ -93,6 +96,55 @@ export class UsersService {
   }
 
   /**
+   * Update user
+   * @param id  id of the logged in user
+   * @param updateUserDto data for updating the user
+   * @returns  updated user from the database
+   */
+  public async update(id: number, updateUserDto: UpdateUserDto) {
+    const { password, username } = updateUserDto;
+    // 1. Fetch the user
+    const user = await this.usersRepository.findOne({ where: { id } });
+
+    // 2. Guard Clause: Check if the user exists
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    // 3. TypeScript now knows 'user' is 100% NOT null, so this is safe:
+    user.username = username ?? user.username;
+    if (password) {
+      user.password = await this.hashPassword(password);
+    }
+    return this.usersRepository.save(user);
+  }
+
+  /**
+   * Delete user
+   * @param userId id of the user
+   * @param payload JWTPayload
+   * @returns a success message
+   */
+  public async delete(userId: number, payload: JWTPayloadType) {
+    const user = await this.getCurrentUser(userId);
+
+    // if (user.id === payload?.id || payload.userType === UserType.ADMIN) {
+    //   await this.usersRepository.remove(user);
+    //   return { message: 'User has been removed' };
+    // }
+    // 2. Perform authorization check
+    const isOwner = user.id === Number(payload?.id);
+    const isAdmin = payload.userType === UserType.ADMIN;
+
+    if (isOwner || isAdmin) {
+      // TypeORM .remove() deletes the entity instance from the database
+      await this.usersRepository.remove(user);
+      return { message: 'User has been removed' };
+    }
+
+    throw new ForbiddenException('access denied, you are not allowed');
+  }
+
+  /**
    * Generate Json web token
    * @param payload JWT payload
    * @returns token
@@ -100,5 +152,15 @@ export class UsersService {
   private generateJWTToken(payload: JWTPayloadType): Promise<string> {
     // haydi 3mlneha private method la2n ma7a nesta3mla ela bi 2alb hal file.
     return this.jwtService.signAsync(payload);
+  }
+
+  /**
+   * Hashing password
+   * @param password plain text password
+   * @returns hashed password
+   */
+  private async hashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
   }
 }
