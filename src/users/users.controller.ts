@@ -1,5 +1,6 @@
 import {
   Body,
+  // ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -10,6 +11,7 @@ import {
   Post,
   Put,
   UseGuards,
+  // UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { RegisterDto } from './dtos/register.dto';
@@ -21,6 +23,7 @@ import { Roles } from './decorators/user-role.decorator';
 import { UserType } from 'src/utils/enums';
 import { AuthRolesGuard } from './guards/auth-roles.guard';
 import { UpdateUserDto } from './dtos/update-user.dto';
+// import { LoggerInterceptor } from 'src/utils/interceptors/logger.interceptor';
 // import { ReviewsService } from 'src/reviews/reviews.service';
 
 @Controller('api/users')
@@ -46,7 +49,10 @@ export class UsersController {
   // GET: ~/api/users/current-user
   @Get('current-user')
   @UseGuards(AuthGuard)
+  // @UseInterceptors(LoggerInterceptor)
+  // @UseInterceptors(ClassSerializerInterceptor) // la2n 3mlna l interceptor globaly sar fina manektba hon
   public getCurrentUser(@CurrentUser() payload: JWTPayloadType) {
+    // console.log('Get Current User Route Handler Route');
     return this.usersService.getCurrentUser(payload.id);
   }
 
@@ -54,6 +60,7 @@ export class UsersController {
   @Get()
   @Roles(UserType.ADMIN) // hon bas badi l admin ye7ssal 3ala hayda l route iza bedna role teni fina nzid "UserType.NORMAL_USER"
   @UseGuards(AuthRolesGuard) // lezm nesta3ml l "Roles" decorator kerml njib l user type iza ma 3mlna hek bya3ti error
+  // @UseInterceptors(ClassSerializerInterceptor) // la2n 3mlna l interceptor globaly sar fina manektba hon
   public getAllUsers() {
     return this.usersService.getAll();
   }
