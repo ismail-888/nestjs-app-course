@@ -1,2 +1,24 @@
 ### Get All Users
 GET http://localhost:5000/api/users
+
+
+### Register
+POST http://localhost:5000/api/users/auth/register
+Content-Type: application/json
+
+{
+
+    "email":"test4@gmail.com",
+    "password":"ismail123"
+    
+}
+
+### Login
+POST http://localhost:5000/api/users/auth/login
+Content-Type: application/json
+
+{
+   "email":"test4@gmail.com",
+    "password":"ismail123"
+}
+
