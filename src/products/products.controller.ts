@@ -11,12 +11,18 @@ import {
   // Req,
   // Res,
   // Headers,
-  ParseIntPipe, // "1" => 1 || "youssef" => throw bad request exception
+  ParseIntPipe,
+  UseGuards, // "1" => 1 || "youssef" => throw bad request exception
   // ValidationPipe,
 } from '@nestjs/common';
 // import type { Request, Response } from 'express';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { UpdateProductDto } from './dtos/update-product.dto';
+import { AuthRolesGuard } from 'src/users/guards/auth-roles.guard';
+import { Roles } from 'src/users/decorators/user-role.decorator';
+import { UserType } from 'src/utils/enums';
+import { CurrentUser } from 'src/users/decorators/current-user.decorator';
+import type { JWTPayloadType } from 'src/utils/types';
 // import { ConfigService } from '@nestjs/config';
 
 // l controller bl nestjs bye3ml handle l requests and responses
@@ -55,11 +61,14 @@ export class ProductsController {
   ) {}
 
   @Post()
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserType.ADMIN)
   public createNewProduct(
     @Body()
     body: CreateProductDto,
+    @CurrentUser() payload: JWTPayloadType,
   ) {
-    return this.ProductsService.createProduct(body);
+    return this.ProductsService.createProduct(body, payload.id);
   }
 
   // GET: ~/api/products
@@ -79,6 +88,8 @@ export class ProductsController {
 
   // PUT: ~/api/products/:id
   @Put(':id')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserType.ADMIN)
   public updateProduct(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateProductDto,
@@ -88,6 +99,8 @@ export class ProductsController {
 
   // Delete: ~/api/products/:id
   @Delete(':id')
+  @UseGuards(AuthRolesGuard)
+  @Roles(UserType.ADMIN)
   public deleteProducts(@Param('id', ParseIntPipe) id: number) {
     return this.ProductsService.delete(id);
   }

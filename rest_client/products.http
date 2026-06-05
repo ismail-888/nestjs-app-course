@@ -8,6 +8,7 @@ GET http://localhost:5000/api/products/2
 ### Create New Product
 POST http://localhost:5000/api/products
 Content-Type: application/json
+Authorization: Bearer ...
 
 {
     "title":"product five",

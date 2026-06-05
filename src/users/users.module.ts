@@ -12,7 +12,7 @@ import { AuthProvider } from './auth.provider';
 @Module({
   controllers: [UsersController],
   providers: [UsersService, AuthProvider],
-  // exports: [UsersService], // hon la2n 3m nesta3ml l user service bl product service
+  exports: [UsersService], // hon la2n 3m nesta3ml l user service bl product service
   // imports: [forwardRef(() => ReviewsModule), TypeOrmModule.forFeature([User])], // bas ykoun fi e3timad da2iri (circule) ye3ni 3m besta3ml l usersService bl reviews, w 3m besta3ml l reviewsService bl users fa bi hal 7ale mnesta3ml l "forwardRef"
   imports: [
     TypeOrmModule.forFeature([User]),

@@ -36,9 +36,9 @@ export class Product {
   })
   updatedAt: Date;
 
-  @OneToMany(() => Review, (review) => review.product)
+  @OneToMany(() => Review, (review) => review.product, { eager: true }) // bas 7aded l "{ eager: true }" hon ye3ni ysir 3a kel l mehode aya fetch 3al product la7 yjib l reviews kamen
   reviews: Review[]; // fi relation 1 to many between product and review
 
-  @ManyToOne(() => User, (user) => user.products)
+  @ManyToOne(() => User, (user) => user.products, { eager: true })
   user: User;
 }
