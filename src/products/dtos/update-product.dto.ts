@@ -25,7 +25,7 @@ export class UpdateProductDto {
   @IsNumber()
   @IsNotEmpty()
   @Min(0, { message: 'price should be greater than 0' })
-  @Max(15)
+  @Max(1500)
   @IsOptional()
   price?: number;
 }

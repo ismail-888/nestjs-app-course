@@ -12,7 +12,8 @@ import {
   // Res,
   // Headers,
   ParseIntPipe,
-  UseGuards, // "1" => 1 || "youssef" => throw bad request exception
+  UseGuards,
+  Query, // "1" => 1 || "youssef" => throw bad request exception
   // ValidationPipe,
 } from '@nestjs/common';
 // import type { Request, Response } from 'express';
@@ -73,11 +74,16 @@ export class ProductsController {
 
   // GET: ~/api/products
   @Get()
-  public getAllProducts() {
+  public getAllProducts(
+    @Query('title') title: string,
+    @Query('minPrice') minPrice: string,
+    @Query('maxPrice') maxPrice: string,
+  ) {
+    // 3m ne3ml destruction 3m ne5od bas l title mn l url w akid bikoun string
     // const sample = this.config.get<string>('SAMPLE');// bl controller wl service haydi l tari2a a7ssan
     // const sample1 = process.env.SAMPLE;
     // console.log({ sample, sample1 });
-    return this.ProductsService.getAll();
+    return this.ProductsService.getAll(title, minPrice, maxPrice);
   }
 
   // GET: ~/api/products/:id
