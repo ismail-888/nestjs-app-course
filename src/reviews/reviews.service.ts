@@ -55,8 +55,18 @@ export class ReviewsService {
     };
   }
 
-  public async getAll() {
-    return this.reviewsRepository.find({ order: { createdAt: 'DESC' } });
+  /**
+   * Get all reviews
+   * @param pageNumber number of the current page
+   * @param reviewPerPage data per page
+   * @returns collection of reviews
+   */
+  public async getAll(pageNumber: number, reviewPerPage: number) {
+    return this.reviewsRepository.find({
+      skip: reviewPerPage * (pageNumber - 1),
+      take: reviewPerPage,
+      order: { createdAt: 'DESC' },
+    });
   }
 
   /**
