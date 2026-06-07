@@ -1,12 +1,19 @@
 // import { Injectable, Inject, forwardRef } from '@nestjs/common';
 // import { UsersService } from 'src/users/users.service';
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Review } from './review.entity';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
 import { ProductsService } from 'src/products/products.service';
 import { CreateReviewDto } from './dtos/create-review.dto';
+import { UpdateReviewDto } from './dtos/update-review.dto';
+import { JWTPayloadType } from 'src/utils/types';
+import { UserType } from 'src/utils/enums';
 
 // iza badi esta5dem l users service bl reviews service lezm nesta3ml l "Inject" decorator wl "forwardRef" function.
 // ama bl reviews controller mafi de3i la 2ilon.
@@ -46,5 +53,55 @@ export class ReviewsService {
       userId: user.id,
       productId: product.id,
     };
+  }
+
+  public async getAll() {
+    return this.reviewsRepository.find({ order: { createdAt: 'DESC' } });
+  }
+
+  /**
+   * Update reviews
+   * @param reviewId id of the review
+   * @param userId id of the owner of the review
+   * @param dto data for updating the review
+   * @returns  updated review
+   */
+  public async update(reviewId: number, userId: number, dto: UpdateReviewDto) {
+    const review = await this.getReviewBy(reviewId);
+    if (review.user.id !== userId)
+      throw new ForbiddenException('access denied, you are not allowed');
+
+    review.rating = dto.rating ?? review.rating;
+    review.comment = dto.comment ?? review.comment;
+
+    return this.reviewsRepository.save(review);
+  }
+
+  /**
+   * Delete review
+   * @param reviewId id of the review
+   * @param payload JWTPayload
+   * @returns  a success message
+   */
+  public async delete(reviewId: number, payload: JWTPayloadType) {
+    const review = await this.getReviewBy(reviewId);
+    if (review.user.id === payload.id || payload.userType === UserType.ADMIN) {
+      await this.reviewsRepository.remove(review);
+      return { message: 'Review has been deleted.' };
+    }
+    throw new ForbiddenException('you are not allowed');
+  }
+
+  /**
+   * Get single review by id
+   * @param id id of the review
+   * @returns review from the database
+   */
+  private async getReviewBy(id: number) {
+    const review = await this.reviewsRepository.findOne({
+      where: { id },
+    });
+    if (!review) throw new NotFoundException('review not found');
+    return review;
   }
 }
