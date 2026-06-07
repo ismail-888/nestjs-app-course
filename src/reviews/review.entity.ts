@@ -31,9 +31,14 @@ export class Review {
   })
   updatedAt: Date;
 
-  @ManyToOne(() => Product, (product) => product.reviews)
+  @ManyToOne(() => Product, (product) => product.reviews, {
+    onDelete: 'CASCADE',
+  })
   product: Product; // fi relation 1 to many between product and review
 
-  @ManyToOne(() => User, (user) => user.reviews, { eager: true })
+  @ManyToOne(() => User, (user) => user.reviews, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
   user: User;
 }
