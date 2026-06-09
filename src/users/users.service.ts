@@ -1,6 +1,7 @@
 // import { forwardRef, Inject, Injectable } from '@nestjs/common';
 // import { ReviewsService } from 'src/reviews/reviews.service';
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -14,6 +15,8 @@ import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserType } from 'src/utils/enums';
 import { AuthProvider } from './auth.provider';
+import { join } from 'node:path';
+import { existsSync, unlinkSync } from 'node:fs';
 
 @Injectable()
 export class UsersService {
@@ -110,5 +113,65 @@ export class UsersService {
     }
 
     throw new ForbiddenException('access denied, you are not allowed');
+  }
+
+  /**
+   * Set Profile iamge
+   * @param userId id of the loagged in user
+   * @param newProfileImage profile image
+   * @returns the user from the database
+   */
+  public async setProfileImage(userId: number, newProfileImage: string) {
+    const user = await this.getCurrentUser(userId);
+
+    // if (user.profileImage === null) {
+    //   user.profileImage = newProfileImage;
+    // } else {
+    //   await this.removeProfileImage(userId);
+    //   user.profileImage = newProfileImage;
+    // }
+
+    // If they have an old image listed in the database, try to clean it up
+    if (user.profileImage) {
+      this.deleteImageFromDisk(user.profileImage);
+    }
+
+    // Safely assign the new image and save to database
+    user.profileImage = newProfileImage;
+    return this.usersRepository.save(user);
+  }
+
+  /**
+   * Remove Profile image
+   * @param userId id of the logged in user
+   * @returns the user form the database
+   */
+  public async removeProfileImage(userId: number) {
+    const user = await this.getCurrentUser(userId);
+    if (user.profileImage === null)
+      throw new BadRequestException('there is no profile image');
+
+    const imagePath = join(
+      process.cwd(),
+      `./images/users/${user.profileImage}`,
+    );
+    unlinkSync(imagePath); // delete the image
+
+    user.profileImage = null;
+    return this.usersRepository.save(user);
+  }
+
+  // 2. This safe helper will NEVER crash your server
+  private deleteImageFromDisk(filename: string) {
+    const imagePath = join(process.cwd(), `./images/users/${filename}`);
+
+    // Check if the file is physically there first!
+    if (existsSync(imagePath)) {
+      unlinkSync(imagePath); // Only delete it if it exists
+    } else {
+      console.log(
+        `File ${filename} was already gone from disk, skipping unlink.`,
+      );
+    }
   }
 }
