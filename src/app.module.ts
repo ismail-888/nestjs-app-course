@@ -8,11 +8,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from './users/user.entity';
 import { Review } from './reviews/review.entity';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
     ProductsModule,
     ReviewsModule,
+    UploadsModule,
     UsersModule,
     TypeOrmModule.forRootAsync({
       // l forRootAsync bisir fina ne3ml injection kerml njib l data mn l .env
