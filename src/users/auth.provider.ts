@@ -7,12 +7,14 @@ import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthProvider {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   /**
@@ -62,6 +64,8 @@ export class AuthProvider {
       id: user.id,
       userType: user.userType,
     });
+
+    await this.mailService.sendLogInEmail(user.email);
     return { accessToken };
   }
 

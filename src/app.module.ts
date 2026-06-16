@@ -9,6 +9,7 @@ import { User } from './users/user.entity';
 import { Review } from './reviews/review.entity';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { UploadsModule } from './uploads/uploads.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UploadsModule } from './uploads/uploads.module';
     ReviewsModule,
     UploadsModule,
     UsersModule,
+    MailModule,
     TypeOrmModule.forRootAsync({
       // l forRootAsync bisir fina ne3ml injection kerml njib l data mn l .env
       inject: [ConfigService],

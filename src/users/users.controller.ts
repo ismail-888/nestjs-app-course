@@ -28,7 +28,7 @@ import { UserType } from 'src/utils/enums';
 import { AuthRolesGuard } from './guards/auth-roles.guard';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+// import { diskStorage } from 'multer';
 import type { Response } from 'express';
 // import { LoggerInterceptor } from 'src/utils/interceptors/logger.interceptor';
 // import { ReviewsService } from 'src/reviews/reviews.service';
@@ -97,26 +97,7 @@ export class UsersController {
   // POST: ~/api/users/upload-image
   @Post('upload-image')
   @UseGuards(AuthGuard) // hayda bye3ml verify lal token
-  @UseInterceptors(
-    FileInterceptor('user-image', {
-      storage: diskStorage({
-        destination: './images/users',
-        filename: (req, file, cb) => {
-          const prefix = `${Date.now()}-${Math.round(Math.random() * 1000)}`;
-          const filename = `${prefix}-${file.originalname}`;
-          cb(null, filename);
-        },
-      }),
-      fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image')) {
-          cb(null, true);
-        } else {
-          cb(new BadRequestException('unsupported file format'), false);
-        }
-      },
-      limits: { fileSize: 1024 * 1024 * 1 }, // 1mb
-    }),
-  )
+  @UseInterceptors(FileInterceptor('user-image'))
   public uploadProfileImage(
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser() payload: JWTPayloadType,
