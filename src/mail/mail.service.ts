@@ -16,13 +16,16 @@ export class MailService {
         to: email,
         from: `<no-reply@my-nestjs-app.com>`,
         subject: 'Welcome to my-nestjs-app.com',
-        html: `
-          <div>
-          <h2>Hi ${email}</h2>
-          <p>
-          You logged in to your account in ${today.toDateString()} at ${today.toLocaleTimeString()}
-          </p>
-          </div>`,
+        // html:
+        //  `
+        //   <div>
+        //   <h2>Hi ${email}</h2>
+        //   <p>
+        //   You logged in to your account in ${today.toDateString()} at ${today.toLocaleTimeString()}
+        //   </p>
+        //   </div>`,
+        template: 'login',
+        context: { email, today },
       });
     } catch (error) {
       console.log(error);
