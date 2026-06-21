@@ -13,6 +13,7 @@ import {
 import { MailService } from 'src/mail/mail.service';
 import { randomBytes } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 
 @Injectable()
 export class AuthProvider {
@@ -101,6 +102,69 @@ export class AuthProvider {
 
     // await this.mailService.sendLogInEmail(user.email);
     return { accessToken };
+  }
+
+  /**
+   * Sending reset password link to the client
+   */
+  public async sendResetPasswordLink(email: string) {
+    const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user)
+      throw new BadRequestException('user with given email does not exist');
+
+    user.resetPasswordToken = randomBytes(32).toString('hex');
+    const result = await this.usersRepository.save(user);
+
+    const resetPasswordLink = `${this.config.get<string>('CLIENT_DOMAIN')}/reset-password/${user.id}/${result.resetPasswordToken}`;
+
+    await this.mailService.sendRestPasswordTemplate(email, resetPasswordLink);
+
+    return {
+      message:
+        ' Password reset link sent to your email, please check your inbox',
+    };
+  }
+
+  /**
+   * Get reset password link
+   */
+  public async getResetPasswordLink(
+    userId: number,
+    resetPasswordToken: string,
+  ) {
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+    if (!user) throw new BadRequestException('invalid link');
+
+    if (
+      user.resetPasswordToken === null ||
+      user.resetPasswordToken !== resetPasswordToken
+    )
+      throw new BadRequestException('invalid link');
+
+    return { message: 'valid link' };
+  }
+
+  /**
+   * Reset the password
+   */
+  public async resetPassword(dto: ResetPasswordDto) {
+    const { userId, resetPasswordToken, newPassword } = dto;
+
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+    if (!user) throw new BadRequestException('invalid link');
+
+    if (
+      user.resetPasswordToken === null ||
+      user.resetPasswordToken !== resetPasswordToken
+    )
+      throw new BadRequestException('invalid link');
+
+    const hashedPassword = await this.hashPassword(newPassword);
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
+    await this.usersRepository.save(user);
+
+    return { message: 'password reset successfully, please login' };
   }
 
   /**

@@ -20,6 +20,7 @@ import { UserType } from 'src/utils/enums';
 import { AuthProvider } from './auth.provider';
 import { join } from 'node:path';
 import { existsSync, unlinkSync } from 'node:fs';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -183,6 +184,34 @@ export class UsersService {
     return {
       message: 'Your email has been verified , please log in to your account',
     };
+  }
+
+  /**
+   * Sending reset password template
+   * @param email email of the user
+   * @returns a success message
+   */
+  public sendResetPassowrd(email: string) {
+    return this.authProvider.sendResetPasswordLink(email);
+  }
+
+  /**
+   * Get reset password link
+   * @param userId user id from the link
+   * @param resetPasswordToken reset password token from the link
+   * @returns a success message
+   */
+  public getResetPassword(userId: number, resetPasswordToken: string) {
+    return this.authProvider.getResetPasswordLink(userId, resetPasswordToken);
+  }
+
+  /**
+   * Reset the password
+   * @param dto data for reset the password
+   * @returns a success message
+   */
+  public resetPassword(dto: ResetPasswordDto) {
+    return this.authProvider.resetPassword(dto);
   }
 
   // 2. This safe helper will NEVER crash your server
