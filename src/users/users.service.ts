@@ -11,7 +11,10 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { LoginDto } from './dtos/login.dto';
-import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
+import {
+  // AccessTokenType,
+  JWTPayloadType,
+} from 'src/utils/types';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserType } from 'src/utils/enums';
 import { AuthProvider } from './auth.provider';
@@ -31,7 +34,7 @@ export class UsersService {
    * @returns JWT (access token)
    */
 
-  public async register(registerDto: RegisterDto): Promise<AccessTokenType> {
+  public async register(registerDto: RegisterDto) {
     return this.authProvider.register(registerDto);
   }
 
@@ -41,7 +44,7 @@ export class UsersService {
    * @returns JWT (access token)
    */
 
-  public async login(loginDto: LoginDto): Promise<AccessTokenType> {
+  public async login(loginDto: LoginDto) {
     return this.authProvider.login(loginDto);
   }
 
@@ -159,6 +162,27 @@ export class UsersService {
 
     user.profileImage = null;
     return this.usersRepository.save(user);
+  }
+
+  /**
+   * Verify Email
+   * @param userId id of the user from the link
+   * @param verificationToken verification token from the link
+   * @returns success message
+   */
+  public async verifyEmail(userId: number, verificationToken: string) {
+    const user = await this.getCurrentUser(userId);
+    if (user.verificationToken === null)
+      throw new NotFoundException('there is no verification token');
+    if (user.verificationToken !== verificationToken)
+      throw new BadRequestException('invalid link');
+
+    user.isAccountVerified = true;
+    user.verificationToken = null;
+    await this.usersRepository.save(user);
+    return {
+      message: 'Your email has been verified , please log in to your account',
+    };
   }
 
   // 2. This safe helper will NEVER crash your server

@@ -6,8 +6,13 @@ import { User } from './user.entity';
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
+import {
+  //  AccessTokenType,
+  JWTPayloadType,
+} from 'src/utils/types';
 import { MailService } from 'src/mail/mail.service';
+import { randomBytes } from 'node:crypto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthProvider {
@@ -15,6 +20,7 @@ export class AuthProvider {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
+    private readonly config: ConfigService,
   ) {}
 
   /**
@@ -23,7 +29,7 @@ export class AuthProvider {
    * @returns JWT (access token)
    */
 
-  public async register(registerDto: RegisterDto): Promise<AccessTokenType> {
+  public async register(registerDto: RegisterDto) {
     const { email, password, username } = registerDto;
 
     const userFromDb = await this.usersRepository.findOne({ where: { email } });
@@ -35,15 +41,25 @@ export class AuthProvider {
       email,
       username,
       password: hashedPassword,
+      verificationToken: randomBytes(32).toString('hex'), //sadf57gastdfg2387tgasdf3
     });
+
     newUser = await this.usersRepository.save(newUser);
+    // const link = `${this.config.get<string>('DOMAIN')}/api/users/verify-email/${newUser.id}/${newUser.verificationToken}`;
+    const link = this.generateLink(newUser.id, newUser.verificationToken);
 
-    const accessToken = await this.generateJWTToken({
-      id: newUser.id,
-      userType: newUser.userType,
-    });
+    await this.mailService.sendVerifyEmailTemplate(email, link);
 
-    return { accessToken };
+    // const accessToken = await this.generateJWTToken({
+    //   id: newUser.id,
+    //   userType: newUser.userType,
+    // });
+
+    // return { accessToken };
+    return {
+      message:
+        'Verificaiotn token has been sent to your email, please verify your email address',
+    };
   }
 
   /**
@@ -52,20 +68,38 @@ export class AuthProvider {
    * @returns JWT (access token)
    */
 
-  public async login(loginDto: LoginDto): Promise<AccessTokenType> {
+  public async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) throw new BadRequestException('invalid email or password');
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch)
       throw new BadRequestException('invalid email or password');
+
+    if (!user.isAccountVerified) {
+      let verificationToken = user.verificationToken;
+
+      if (!verificationToken) {
+        user.verificationToken = randomBytes(32).toString('hex');
+        const result = await this.usersRepository.save(user);
+        verificationToken = result.verificationToken;
+      }
+      const link = this.generateLink(user.id, verificationToken);
+      await this.mailService.sendVerifyEmailTemplate(email, link);
+
+      return {
+        message:
+          'Verificaiotn token has been sent to your email, please verify your email address',
+      };
+    }
+
     // generate JWT token
     const accessToken = await this.generateJWTToken({
       id: user.id,
       userType: user.userType,
     });
 
-    await this.mailService.sendLogInEmail(user.email);
+    // await this.mailService.sendLogInEmail(user.email);
     return { accessToken };
   }
 
@@ -87,5 +121,12 @@ export class AuthProvider {
   private generateJWTToken(payload: JWTPayloadType): Promise<string> {
     // haydi 3mlneha private method la2n ma7a nesta3mla ela bi 2alb hal file.
     return this.jwtService.signAsync(payload);
+  }
+
+  /**
+   * Generate email verification link
+   */
+  private generateLink(userId: number, verificationToken: string | null) {
+    return `${this.config.get<string>('DOMAIN')}/api/users/verify-email/${userId}/${verificationToken}`;
   }
 }
