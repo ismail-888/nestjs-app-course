@@ -32,6 +32,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
+import { ApiBody, ApiConsumes, ApiSecurity } from '@nestjs/swagger';
+import { ImageUploadDto } from './dtos/image-upload.dto';
 // import { LoggerInterceptor } from 'src/utils/interceptors/logger.interceptor';
 // import { ReviewsService } from 'src/reviews/reviews.service';
 
@@ -100,6 +102,9 @@ export class UsersController {
   @Post('upload-image')
   @UseGuards(AuthGuard) // hayda bye3ml verify lal token
   @UseInterceptors(FileInterceptor('user-image'))
+  @ApiSecurity('bearer')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: ImageUploadDto, description: ' profile image' })
   public uploadProfileImage(
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser() payload: JWTPayloadType,
