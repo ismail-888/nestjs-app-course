@@ -19,10 +19,12 @@ async function bootstrap() {
   const swagger = new DocumentBuilder()
     .setTitle('Nest JS Course - App API')
     .setDescription('Your API description')
-    .setVersion('1.0')
     .addServer('http://localhost:5000')
     .setTermsOfService('http://localhost:5000/terms-of-service')
     .setLicense('MIT License', 'https://google.com')
+    .setVersion('1.0')
+    .addSecurity('bearer', { type: 'http', scheme: 'bearer' })
+    .addBearerAuth()
     .build();
   const documentation = SwaggerModule.createDocument(app, swagger);
   // http://localhost:5000/abc

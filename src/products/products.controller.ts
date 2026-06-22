@@ -24,7 +24,13 @@ import { Roles } from 'src/users/decorators/user-role.decorator';
 import { UserType } from 'src/utils/enums';
 import { CurrentUser } from 'src/users/decorators/current-user.decorator';
 import type { JWTPayloadType } from 'src/utils/types';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 
 // import { ConfigService } from '@nestjs/config';
 
@@ -67,6 +73,7 @@ export class ProductsController {
   @Post()
   @UseGuards(AuthRolesGuard)
   @Roles(UserType.ADMIN)
+  @ApiSecurity('bearer')
   public createNewProduct(
     @Body()
     body: CreateProductDto,
@@ -122,6 +129,7 @@ export class ProductsController {
   @Put(':id')
   @UseGuards(AuthRolesGuard)
   @Roles(UserType.ADMIN)
+  @ApiSecurity('bearer')
   public updateProduct(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateProductDto,
@@ -133,6 +141,7 @@ export class ProductsController {
   @Delete(':id')
   @UseGuards(AuthRolesGuard)
   @Roles(UserType.ADMIN)
+  @ApiSecurity('bearer')
   public deleteProducts(@Param('id', ParseIntPipe) id: number) {
     return this.ProductsService.delete(id);
   }
