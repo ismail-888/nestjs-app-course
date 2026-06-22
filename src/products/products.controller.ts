@@ -24,6 +24,7 @@ import { Roles } from 'src/users/decorators/user-role.decorator';
 import { UserType } from 'src/utils/enums';
 import { CurrentUser } from 'src/users/decorators/current-user.decorator';
 import type { JWTPayloadType } from 'src/utils/types';
+import { ApiTags } from '@nestjs/swagger';
 // import { ConfigService } from '@nestjs/config';
 
 // l controller bl nestjs bye3ml handle l requests and responses
@@ -43,6 +44,7 @@ import type { JWTPayloadType } from 'src/utils/types';
 // }
 
 @Controller('api/products')
+@ApiTags('Products Group') // is badi 8ayer l essm bl swagger
 export class ProductsController {
   // @IMPORT NOTE: this considered as bad practice, we will fix it in the next lession lezm nesta3ml l dependency injection
   // private ProductsService: ProductsService = new ProductsService();
