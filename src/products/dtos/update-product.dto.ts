@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsNumber,
   IsNotEmpty,
@@ -15,11 +16,13 @@ export class UpdateProductDto {
   @IsNotEmpty()
   @Length(2, 150)
   @IsOptional()
+  @ApiPropertyOptional({ description: 'title of the product' })
   title?: string;
 
   @IsString()
   @MinLength(5)
   @IsOptional()
+  @ApiPropertyOptional({ description: 'description of the product' })
   description?: string;
 
   @IsNumber()
@@ -27,5 +30,6 @@ export class UpdateProductDto {
   @Min(0, { message: 'price should be greater than 0' })
   @Max(1500)
   @IsOptional()
+  @ApiPropertyOptional({ description: 'price of the product' })
   price?: number;
 }

@@ -24,7 +24,8 @@ import { Roles } from 'src/users/decorators/user-role.decorator';
 import { UserType } from 'src/utils/enums';
 import { CurrentUser } from 'src/users/decorators/current-user.decorator';
 import type { JWTPayloadType } from 'src/utils/types';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+
 // import { ConfigService } from '@nestjs/config';
 
 // l controller bl nestjs bye3ml handle l requests and responses
@@ -76,6 +77,29 @@ export class ProductsController {
 
   // GET: ~/api/products
   @Get()
+  @ApiResponse({ status: 200, description: 'products fetched successfully' })
+  @ApiOperation({ summary: ' Get a collection of products' })
+  @ApiQuery({
+    name: 'title',
+    required: false,
+    type: 'string',
+    description: 'search base on product title',
+    example: 'lapotp',
+  })
+  @ApiQuery({
+    name: 'minPrice',
+    required: false,
+    type: 'string',
+    description: 'minimum price',
+    example: '100',
+  })
+  @ApiQuery({
+    name: 'maxPrice',
+    required: false,
+    type: 'string',
+    description: 'maximum price',
+    example: '200',
+  })
   public getAllProducts(
     @Query('title') title: string,
     @Query('minPrice') minPrice: string,

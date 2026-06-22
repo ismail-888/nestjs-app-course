@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNumber,
   IsNotEmpty,
@@ -17,15 +18,18 @@ export class CreateProductDto {
   // @MinLength(2)
   // @MaxLength(150)
   @Length(2, 150) // this is the same as @MinLength(2) @MaxLength(150)
+  @ApiProperty({ description: 'title of the product' })
   title: string;
 
   @IsString()
   @MinLength(5)
+  @ApiProperty({ description: 'description of the product' })
   description: string;
 
   @IsNumber()
   @IsNotEmpty()
   @Min(0, { message: 'price should be greater than 0' })
   @Max(1500)
+  @ApiProperty({ description: 'price of the product' })
   price: number;
 }
