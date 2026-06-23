@@ -13,10 +13,11 @@ import { Product } from './products/product.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from './users/user.entity';
 import { Review } from './reviews/review.entity';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { UploadsModule } from './uploads/uploads.module';
 import { MailModule } from './mail/mail.module';
 import { LoggerMiddleware } from './utils/middlewares/logger.middleware';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 // import helmet from 'helmet';
 
 @Module({
@@ -46,11 +47,32 @@ import { LoggerMiddleware } from './utils/middlewares/logger.middleware';
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 4000, // 4 seconds
+        limit: 3, // 3 request every 4 seconds for a client
+      },
+      {
+        name: 'medium',
+        ttl: 10000, // 10 seconds
+        limit: 7, // 7 request every 10 seconds for a client
+      },
+      {
+        name: 'long',
+        ttl: 60000, // 60 seconds
+        limit: 15, // 15 request every 60 seconds for a client
+      },
+    ]),
   ], // hone 3erafna l modules bl app module li houwe you3tabar l parent module
   providers: [
     {
       provide: APP_INTERCEPTOR,
       useClass: ClassSerializerInterceptor, // hek 3mlna l interceptor globaly la7 yeshte8el bi kel l routes massalan ma bedna na3ti l pass lal client
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

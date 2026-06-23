@@ -31,6 +31,7 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 // import { ConfigService } from '@nestjs/config';
 
@@ -51,6 +52,7 @@ import {
 // }
 
 @Controller('api/products')
+// @SkipThrottle() // ye3ni hala2 l "Rate limit" ma 7a yeshte8el 3a kll routes
 @ApiTags('Products Group') // is badi 8ayer l essm bl swagger
 export class ProductsController {
   // @IMPORT NOTE: this considered as bad practice, we will fix it in the next lession lezm nesta3ml l dependency injection
@@ -121,6 +123,8 @@ export class ProductsController {
 
   // GET: ~/api/products/:id
   @Get(':id')
+  @SkipThrottle() // ye3ni hala2 l "Rate limit" ma 7a yeshte8el 3a haydi l route
+  @Throttle({ default: { limit: 5, ttl: 10000 } }) // hon iza badi 8ayer l "rate limit" setting la route mou3ayan 3mlna "override"
   public getSingleProducts(@Param('id', ParseIntPipe) id: number) {
     return this.ProductsService.getOneBy(id);
   }
