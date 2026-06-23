@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,10 +13,15 @@ async function bootstrap() {
     }),
   );
 
+  // Apply Middleware
+  app.use(helmet());
+
+  // Cors Policy
   app.enableCors({
     origin: 'http://localhost:3000',
   });
 
+  // Swagger
   const swagger = new DocumentBuilder()
     .setTitle('Nest JS Course - App API')
     .setDescription('Your API description')
@@ -31,6 +37,7 @@ async function bootstrap() {
   // SwaggerModule.setup('abc', app, documentation);
   SwaggerModule.setup('swagger', app, documentation);
 
+  // Running the app
   await app.listen(process.env.PORT ?? 5000);
 }
 bootstrap();

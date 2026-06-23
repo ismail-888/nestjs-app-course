@@ -1,4 +1,10 @@
-import { ClassSerializerInterceptor, Module } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { ProductsModule } from './products/products.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { UsersModule } from './users/users.module';
@@ -10,6 +16,8 @@ import { Review } from './reviews/review.entity';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { UploadsModule } from './uploads/uploads.module';
 import { MailModule } from './mail/mail.module';
+import { LoggerMiddleware } from './utils/middlewares/logger.middleware';
+// import helmet from 'helmet';
 
 @Module({
   imports: [
@@ -46,4 +54,25 @@ import { MailModule } from './mail/mail.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware)
+      .exclude({ path: 'api/products', method: RequestMethod.POST })
+      .forRoutes(
+        {
+          // path: '*', // ye3ni l middleware byeshte8el la kel l route "users, product, review.."
+          path: 'api/products',
+          // method: RequestMethod.ALL,
+          method: RequestMethod.GET,
+        },
+        // {
+        //   path: 'api/products',
+        //   method: RequestMethod.DELETE,
+        // },
+      );
+    // consumer
+    //   .apply(helmet())
+    //   .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
